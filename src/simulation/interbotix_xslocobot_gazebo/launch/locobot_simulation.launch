@@ -1,0 +1,59 @@
+<launch>
+    <arg name="robot_name"                        default="locobot"/>
+    <arg name="robot_model_1"                     default="locobot_base"/>
+    <arg name="robot_model_2"                     default="locobot_px100"/>
+    <arg name="robot_model_3"                     default="locobot_wx200"/>
+    <arg name="robot_model_4"                     default="locobot_wx250s"/>
+    <arg name="robot_name_1"                      default="locobot_1"/>
+    <arg name="robot_name_2"                      default="locobot_2"/>
+    <arg name="robot_name_3"                      default="locobot_3"/>
+    <arg name="robot_name_4"                      default="locobot_4"/>
+    <arg name="rvizconfig"                        default="$(find interbotix_xslocobot_descriptions)/rviz/many_locobots.rviz" />
+    <arg name="keyboard_controller"               default="true"/>
+    <arg name="use_lidar"                         default="true"/>
+    <arg name="show_lidar"                        default="$(arg use_lidar)"/>
+    <arg name="use_camera"                        default="true"/>
+    <!-- cartographer slam parameters-->
+    <arg name="configuration_basename" default="hybird_slam_2d_gazebo.lua"/>
+    <arg name="remap_map_topic" default="false" />
+    <arg name="remap_map_topic_name" default="/cmap" />
+    
+    <!-- gazebo -->
+    <include file="$(find interbotix_xslocobot_gazebo)/launch/xslocobot_gazebo.launch">
+        <arg name="robot_model"                       value="$(arg robot_model_4)"/>
+        <arg name="show_lidar"                        value="true"/>
+        <arg name="use_trajectory_controllers"        value="true"/>
+        <arg name="use_rviz"                          default="true"/>
+        <arg name="paused"                            default="true"/>
+        
+        <!-- World File -->
+        <arg name="world_name" default="$(find interbotix_xslocobot_gazebo)/worlds/triangle_test.world"/>
+    </include>
+
+    <!-- keyboard controller node -->
+    <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop" output="screen">
+        <remap from="cmd_vel" to="locobot/mobile_base/commands/velocity"/>
+    </node>
+
+    <!-- Launch cartographer SLAM -->
+    <include file="$(find interbotix_xslocobot_gazebo)/launch/cartographer_slam_gazebo.launch">
+        <arg name="configuration_basename" value="$(arg configuration_basename)"/>
+        <arg name="remap_map_topic" value="$(arg remap_map_topic)"/>
+        <arg name="remap_map_topic_name" value="$(arg remap_map_topic_name)" />
+    </include>
+
+    <!-- Static Transform Node from `odom` to `map` frame - Required by move_base node -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="odom_to_map_transformation" args="0 0 0 0 0 0 1 map odom 100" /> -->
+
+    <!-- MOVE Base Node - DWAPlannerROS -->
+    <!-- <include file="$(find interbotix_xslocobot_gazebo)/launch/localPlanner.launch"/> -->
+
+    
+
+    <!-- Autonomous exploration: RRT Exploration -->
+    <!-- <include file="$(find rrt_exploration)/launch/rrt_exploration.launch">
+        <arg name="robot_frame" value="locobot/base_footprint"/>
+        <arg name="global_frame" value="map"/>
+        <arg name="map_topic" value="/map"/>
+    </include> -->
+</launch>
