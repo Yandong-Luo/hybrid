@@ -3,8 +3,7 @@
 - Using the keyboard to control the hybird to finish the task
 
 #### Current issues:
-If you try to compile these code, maybe you will get a lots of errors. I will write down a .sh file to help install all dependencies.
-
+If you try to compile these code, maybe you will get a lots of errors. I will write down a .sh file to Install all dependencies
 #### Next step:
 - Based on RRT algorithm to realize hybird autonomously finish the SLAM task.
 - Using CV to detect the spherical object and use the arm to pick up it.
