@@ -1,0 +1,28 @@
+<launch>
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <remap from="cmd_vel" to="locobot/mobile_base/commands/velocity"/>
+    <remap from="/move_base_simple/goal" to="/locobot/move_base_simple/goal"/>
+    <remap from="map" to="/map" />
+    
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    
+    <rosparam file="$(find interbotix_xslocobot_gazebo)/config/dwa_planner/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find interbotix_xslocobot_gazebo)/config/dwa_planner/costmap_common_params.yaml" command="load" ns="local_costmap" />
+
+    <rosparam file="$(find interbotix_xslocobot_gazebo)/config/dwa_planner/costmap_local_params.yaml" command="load" />
+
+    <rosparam file="$(find interbotix_xslocobot_gazebo)/config/dwa_planner/costmap_global_params.yaml" command="load" />
+    
+    <rosparam file="$(find interbotix_xslocobot_gazebo)/config/dwa_planner/move_base_params.yaml" command="load" />
+
+    <rosparam file="$(find interbotix_xslocobot_gazebo)/config/dwa_planner/dwa_local_planner_params.yaml" command="load" />
+
+  </node>
+</launch>
+
+
+
+
+
+
+

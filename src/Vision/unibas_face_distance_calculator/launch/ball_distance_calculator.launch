@@ -1,0 +1,15 @@
+<launch>
+    <arg name="depth_image"                       default="/camera/aligned_depth_to_color/image_raw"/>
+    <arg name="RGB_image"                       default="/camera/color/image_raw"/>
+    <arg name="camera_info"                       default="/camera/color/camera_info"/>
+
+
+    <node pkg="unibas_face_distance_calculator" name="face_distance_calculator" type="face_distance_calculator.py" output="screen">
+        <!-- Using depth_image after aligned -->
+        <param name="depth_image_topic" value="$(arg depth_image)"/>
+        <!-- RGB image topic -->
+        <param name="RGB_image_topic" value="$(arg RGB_image)"/>
+        <!-- camera info topic -->
+        <param name="camera_info_topic" value="$(arg camera_info)"/>
+    </node>
+</launch>
