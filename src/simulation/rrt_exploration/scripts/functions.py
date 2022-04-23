@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import tf
 from numpy import array
@@ -20,7 +22,7 @@ class robot:
         self.assigned_point = []
         self.name = name
         self.global_frame = rospy.get_param('~global_frame', 'map')
-        self.robot_frame = rospy.get_param('~robot_frame', 'robot_footprint')
+        self.robot_frame = rospy.get_param('~robot_frame', 'locobot/base_footprint')
         self.plan_service = rospy.get_param(
             '~plan_service', '/move_base/NavfnROS/make_plan')
         self.listener = tf.TransformListener()
@@ -29,6 +31,7 @@ class robot:
         cond = 0
         while cond == 0:
             try:
+                print("vvvvvvvvvvvvvvvvvvvvvvvvglobal_frame: "+self.global_frame)
                 rospy.loginfo('Waiting for the robot transform')
                 (trans, rot) = self.listener.lookupTransform(
                     self.global_frame, '/'+self.robot_frame, rospy.Time(0))

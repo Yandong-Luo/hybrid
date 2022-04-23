@@ -23,22 +23,25 @@
 
     <arg name="use_rrt_exploration"               default="false"/>
     <arg name="use_moveit"                        default="false"/>
+    <arg name="use_slam"                          default="false"/>
+    <arg name="use_navigation"                    default="false"/>
 
     <!-- arg of rviz -->
-    <arg name="task" default="slam"/>
     <arg name="rviz_frame"                        default="$(arg robot_name)/base_footprint"/>
-    <arg name="rvizconfig"                        default="$(find interbotix_xslocobot_descriptions)/rviz/indoor_bot.rviz"/>
-    <!-- <group if="$(eval task== 'slam')">
-        <arg name="rivzconfig" value="$(arg slam_rvizconfig)"/>
-    </group> -->
+    <arg name="rvizconfig"                        default="$(find interbotix_xslocobot_gazebo)/rviz/indoor_bot.rviz"/>
+
 
     <!-- cartographer slam parameters-->
     <arg name="configuration_basename" default="hybird_slam_2d_gazebo.lua"/>
     <arg name="remap_map_topic" default="false" />
     <arg name="remap_map_topic_name" default="/cmap" />
 
-    <!-- <remap from="/locobot/imu" to="/imu"/>
-    <remap from="/locobot/odom" to="/odom"/> -->
+    <!-- Localization params -->
+    <arg name="map_file" default="$(find interbotix_xslocobot_gazebo)/maps/locobot_slam.yaml"/>
+    <arg name="world_file" default="$(find interbotix_xslocobot_gazebo)/worlds/triangle_test.world"/>
+    <arg name="initial_pose_x" default="0."/>
+    <arg name="initial_pose_y" default="0."/>
+
     
     <!-- gazebo -->
     <include file="$(find interbotix_xslocobot_gazebo)/launch/xslocobot_gazebo.launch">
@@ -48,73 +51,115 @@
         <arg name="use_trajectory_controllers"        value="true"/>
         <arg name="use_rviz"                          default="false"/>
         <arg name="external_urdf_loc"                 value="$(arg external_urdf_loc)"/>
-        <!-- <arg name="paused"                            default="true"/>
-        <arg name="use_joint_pub"                     value="true"/> -->
+        <arg name="paused"                            default="true"/>
+        <!--<arg name="use_joint_pub"                     value="true"/> -->
         <!-- World File -->
         <arg name="world_name" default="$(find interbotix_xslocobot_gazebo)/worlds/triangle_test.world"/>
     </include>
 
+    <!-- ======================================= SLAM TASK ==============================================-->
+    <group if="$(arg use_slam)">
+        <!-- Launch cartographer SLAM -->
+        <include file="$(find interbotix_xslocobot_gazebo)/launch/cartographer_slam_gazebo.launch">
+            <arg name="configuration_basename" value="$(arg configuration_basename)"/>
+            <arg name="remap_map_topic" value="$(arg remap_map_topic)"/>
+            <arg name="remap_map_topic_name" value="$(arg remap_map_topic_name)" />
+        </include>
 
-    <!-- keyboard controller node -->
-    <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop" output="screen">
-        <remap from="cmd_vel" to="locobot/mobile_base/commands/velocity"/>
-    </node>
+        <!-- keyboard controller node -->
+        <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop" output="screen">
+            <remap from="cmd_vel" to="locobot/mobile_base/commands/velocity"/>
+        </node>
+    </group>
 
-    <!-- Launch cartographer SLAM -->
-    <include file="$(find interbotix_xslocobot_gazebo)/launch/cartographer_slam_gazebo.launch">
-        <arg name="configuration_basename" value="$(arg configuration_basename)"/>
-        <arg name="remap_map_topic" value="$(arg remap_map_topic)"/>
-        <arg name="remap_map_topic_name" value="$(arg remap_map_topic_name)" />
-    </include>
+    <!-- ======================================= RRT EXPLORATION TASK ==============================================-->
+    <group if="$(arg use_rrt_exploration)">
 
-    <!-- Static Transform Node from `odom` to `map` frame - Required by move_base node -->
-    <node pkg="tf" type="static_transform_publisher" name="odom_to_map_transformation" args="0 0 0 0 0 0 1 map locobot/odom 100">
-    </node>
+        <!-- Launch cartographer SLAM -->
+        <include file="$(find interbotix_xslocobot_gazebo)/launch/cartographer_slam_gazebo.launch">
+            <arg name="configuration_basename" value="$(arg configuration_basename)"/>
+            <arg name="remap_map_topic" value="$(arg remap_map_topic)"/>
+            <arg name="remap_map_topic_name" value="$(arg remap_map_topic_name)" />
+        </include>
 
+        <!-- Static Transform Node from `odom` to `map` frame - Required by move_base node -->
+        <node pkg="tf" type="static_transform_publisher" name="odom_to_map_transformation" args="0 0 0 0 0 0 1 map locobot/odom 100"/>
 
-    <!-- MOVE Base Node - DWAPlannerROS -->
-    <include file="$(find interbotix_xslocobot_gazebo)/launch/localPlanner.launch" ns="$(arg robot_name)">
-    </include>
+        <!-- MOVE Base Node - DWAPlannerROS -->
+        <include  file="$(find interbotix_xslocobot_gazebo)/launch/localPlanner.launch">
+            <arg name="robot_name"                        value="$(arg robot_name)"/>
+            <arg name="use_lidar"                         value="true"/>
+        </include>
 
-    <!-- Autonomous exploration: RRT Exploration -->
-    <include file="$(find rrt_exploration)/launch/rrt_exploration.launch" ns="$(arg robot_name)">
-        <arg name="robot_frame" value="base_footprint"/>
-        <arg name="global_frame" value="map"/>
-        <arg name="map_topic" value="/map"/>
-    </include>
+        <!-- Autonomous exploration: RRT Exploration -->
+        <include file="$(find rrt_exploration)/launch/rrt_exploration.launch">
+            <arg name="robot_frame" value="locobot/base_footprint"/>
+            <arg name="global_frame" value="map"/>
+            <arg name="map_topic" value="/map"/>
+        </include>
+    </group>
 
+    <!-- ======================================= NAVIGATION TASK ============================================== -->
+    <group if="$(arg use_navigation)">
 
+        <!-- MOVE Base Node - DWAPlannerROS -->
+        <include  file="$(find interbotix_xslocobot_gazebo)/launch/localPlanner.launch">
+            <arg name="robot_name"                        value="$(arg robot_name)"/>
+            <arg name="use_lidar"                         value="true"/>
+        </include>
 
-    <include if="$(arg use_moveit)" file="$(find interbotix_xslocobot_gazebo)/launch/load_ball.launch" ns="$(arg robot_name)"/>
+        <!-- Static Transform Node from `odom` to `map` frame - Required by move_base node -->
+        <node pkg="tf" type="static_transform_publisher" name="odom_to_map_transformation" args="0 0 0 0 0 0 1 map locobot/odom 100"/>
 
-    <!-- <remap from="$(arg robot_name)/robot_description" to="robot_description"/> -->
+        <!-- MAP Server -->
+        <include file="$(find interbotix_xslocobot_gazebo)/launch/map_server.launch">
+            <arg name="map_file" value="$(arg map_file)"/>
+        </include>
 
-    <include if="$(arg use_moveit)" file="$(find interbotix_xslocobot_moveit)/launch/move_group.launch" ns="$(arg robot_name)">
-        <arg name="robot_model"                       value="$(arg robot_model_4)"/>
-        <arg name="robot_name"                        value="$(arg robot_name)"/>
-        <arg name="show_lidar"                        value="$(arg show_lidar)"/>
-        <arg name="external_srdf_loc"                 value="$(arg external_srdf_loc)"/>
-        <arg name="dof"                               value="$(arg dof)"/>
-        <arg name="use_camera"                        value="$(arg use_camera)"/>
-        <arg name="fake_execution"                    value="$(arg use_fake)"/>
-        <arg name="publish_monitored_planning_scene"  value="true" />
-    </include>
+        <!-- AMCL Node -->
+        <include file="$(find interbotix_xslocobot_gazebo)/launch/amcl.launch" >
+            <arg name="base_frame_id"   value="/locobot/base_footprint"/>
+            <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+            <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+        </include>
 
-    <node if="$(arg use_moveit)" name="interbotix_simulation_controller_node"      pkg="interbotix_simulation_controller"      type="interbotix_simulation_controller_node"
-      respawn="false"      output="screen"      ns="$(arg robot_name)"/>
-    
+        <!--上帝视角里程计-->
+        <node pkg="gazebo_odom_publisher" type="gazebo_odom_publisher_node" name="gazebo_odom_publisher_node" output="screen" >
+            <param name="robot_name" value="$(arg robot_name)" />
+            <param name="odom_topic" value="/locobot/odom"/>
+            <param name="robot_frame_id" value="locobot/base_footprint"/>
+            <param name="Frequency_of_odom_publisher" value="20"/>
+        </node>
+    </group>
 
-    <!--RVIZ-->
-    <!-- <include if="$(arg use_rviz)" file="$(find interbotix_xslocobot_moveit)/launch/moveit_rviz.launch" ns="$(arg robot_name)">
-        <arg name="robot_name"                        value="$(arg robot_name)"/>
-        <arg name="config"                            value="true"/>
-    </include> -->
+    <group if="$(arg use_moveit)">
+        <!-- Load Tennis ball -->
+        <include file="$(find interbotix_xslocobot_gazebo)/launch/load_ball.launch" ns="$(arg robot_name)"/>
+
+        <!-- Launch Move Group -->
+        <include file="$(find interbotix_xslocobot_moveit)/launch/move_group.launch" ns="$(arg robot_name)">
+            <arg name="robot_model"                       value="$(arg robot_model_4)"/>
+            <arg name="robot_name"                        value="$(arg robot_name)"/>
+            <arg name="show_lidar"                        value="$(arg show_lidar)"/>
+            <arg name="external_srdf_loc"                 value="$(arg external_srdf_loc)"/>
+            <arg name="dof"                               value="$(arg dof)"/>
+            <arg name="use_camera"                        value="$(arg use_camera)"/>
+            <arg name="fake_execution"                    value="$(arg use_fake)"/>
+            <arg name="publish_monitored_planning_scene"  value="true" />
+        </include>
+
+        <!-- Service for controller Everything -->
+        <node name="interbotix_simulation_controller_node"      pkg="interbotix_simulation_controller"      type="interbotix_simulation_controller_node"
+            respawn="false"      output="screen"      ns="$(arg robot_name)"/>
+        
+    </group>
+
 
     <node if="$(arg use_rviz)"    name="rviz"     pkg="rviz"    type="rviz"
-    args="-f $(arg rviz_frame) -d $(arg rvizconfig)"
-    ns="$(arg robot_name)">
-    <remap from="/clicked_point" to="clicked_point"/>
-    <remap from="/initialpose" to="initialpose"/>
-    <remap from="/move_base_simple/goal" to="move_base_simple/goal"/>
-  </node>
+        args="-f $(arg rviz_frame) -d $(arg rvizconfig)"
+        ns="$(arg robot_name)">
+        <remap from="/clicked_point" to="clicked_point"/>
+        <remap from="/initialpose" to="initialpose"/>
+        <remap from="/move_base_simple/goal" to="move_base_simple/goal"/>
+    </node>
 </launch>

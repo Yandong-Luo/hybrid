@@ -183,6 +183,8 @@ void SimulationController::closedGripper(trajectory_msgs::JointTrajectory& postu
 /// @brief pick up
 bool SimulationController::pick_up(void)
 {
+    arm_move_group->setPlanningTime(45.0);
+
     add_tennis_ball_as_object();
 
     std::vector<moveit_msgs::Grasp> grasps;
@@ -192,7 +194,7 @@ bool SimulationController::pick_up(void)
     tf2::Quaternion orientation;
     // orientation.setRPY(0, 0, 0);
     orientation.setRPY(0, 0.4, 0);
-    ROS_INFO("=========================================ORIENTATION:%f\n",orientation.getX());
+
     grasps[0].grasp_pose.pose.orientation = tf2::toMsg(orientation);
     grasps[0].grasp_pose.pose.position.x = 0.546;
     grasps[0].grasp_pose.pose.position.y = 0;
@@ -214,7 +216,7 @@ bool SimulationController::pick_up(void)
     /* Direction is set as positive z axis */
     grasps[0].post_grasp_retreat.direction.vector.z = 1;
     grasps[0].post_grasp_retreat.min_distance = 0.1;
-    grasps[0].post_grasp_retreat.desired_distance = 0.25;
+    grasps[0].post_grasp_retreat.desired_distance = 0.55;
 
     openGripper(grasps[0].pre_grasp_posture);
 

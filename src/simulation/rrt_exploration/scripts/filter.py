@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 # --------Include modules---------------
 from copy import copy
@@ -63,7 +63,7 @@ def node():
     namespace_init_count = rospy.get_param('namespace_init_count', 1)
     rateHz = rospy.get_param('~rate', 100)
     global_costmap_topic = rospy.get_param('~global_costmap_topic', '/move_base/global_costmap/costmap')
-    robot_frame = rospy.get_param('~robot_frame', 'robot_footprint')
+    robot_frame = rospy.get_param('~robot_frame', 'locobot/base_footprint')
 
     litraIndx = len(namespace)
     rate = rospy.Rate(rateHz)
@@ -85,14 +85,14 @@ def node():
     # wait if map is not received yet
     while (len(mapData.data) < 1):
         rospy.loginfo('Waiting for the map')
-        rospy.sleep(0.1)
+        rospy.sleep(1)
         pass
     
     # wait if any of robots' global costmap map is not received yet
     for i in range(0, n_robots):
         while (len(globalmaps[i].data) < 1):
             rospy.loginfo('Waiting for the global costmap')
-            rospy.sleep(0.1)
+            rospy.sleep(1)
             pass
 
     global_frame = "/"+mapData.header.frame_id
@@ -103,6 +103,7 @@ def node():
             tfLisn.waitForTransform(
                 global_frame[1:], namespace+str(i+namespace_init_count)+'/'+robot_frame, rospy.Time(0), rospy.Duration(10.0))
     elif len(namespace) == 0:
+        print("robot frame:"+robot_frame)
         tfLisn.waitForTransform(
             global_frame[1:], '/'+robot_frame, rospy.Time(0), rospy.Duration(10.0))
 

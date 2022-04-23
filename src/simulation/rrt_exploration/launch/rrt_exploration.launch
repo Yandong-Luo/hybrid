@@ -24,6 +24,7 @@
     </node>
  
     <node pkg="rrt_exploration" type="filter.py" name="filter" output="screen">
+        <param name="robot_frame" value="$(arg robot_frame)"/>
         <param name="map_topic" value="$(arg map_topic)"/>
         <param name="info_radius" value="$(arg info_radius)"/> 
         <param name="costmap_clearing_threshold" value="70"/> 
