@@ -18,12 +18,15 @@ int8 CMD_PLAN_JOINT_POSE_TO_SLEEP = 8
 int8 CMD_OPEN_GRIPPER = 9
 int8 CMD_CLOSE_GRIPPER = 10
 int8 CMD_PICK_UP = 11
+int8 CMD_NAVIGATION = 12
 int8 cmd
 
 # get the angle for pan_link to control the view of camera
 std_msgs/Float64 camera_angle
 
 float64[] joint_vector
+
+geometry_msgs/PoseStamped nav_goal_pose
 
 # desired ee_pose, position, or orientation
 geometry_msgs/Pose ee_pose

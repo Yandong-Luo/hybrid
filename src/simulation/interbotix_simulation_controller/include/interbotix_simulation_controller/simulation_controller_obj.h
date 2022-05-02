@@ -11,6 +11,7 @@
 #include <moveit_visual_tools/moveit_visual_tools.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/PoseStamped.h>
 // TF2
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 // const double tau = 2 * M_PI;
@@ -50,12 +51,16 @@ public:
 
     void openGripper(trajectory_msgs::JointTrajectory& posture);
 
+    bool publish_navigation_goal(const geometry_msgs::PoseStamped goal_pose);
+
     /// @brief Destructor for the SimulationController
     ~SimulationController();
 private:
     ros::NodeHandle node;
     ros::ServiceServer srv_moveit_plan;
     ros::Publisher camera_pub;
+
+    ros::Publisher nav_goal_pub;
     
     const robot_state::JointModelGroup *arm_joint_model_group;
     moveit::planning_interface::MoveGroupInterface *arm_move_group;

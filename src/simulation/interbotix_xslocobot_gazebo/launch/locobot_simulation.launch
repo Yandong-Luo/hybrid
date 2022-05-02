@@ -27,7 +27,7 @@
     <arg name="use_navigation"                    default="false"/>
 
     <!-- arg of rviz -->
-    <arg name="rviz_frame"                        default="$(arg robot_name)/base_footprint"/>
+    <arg name="rviz_frame"                        default="map"/>
     <arg name="rvizconfig"                        default="$(find interbotix_xslocobot_gazebo)/rviz/indoor_bot.rviz"/>
 
 
@@ -134,7 +134,14 @@
 
     <group if="$(arg use_moveit)">
         <!-- Load Tennis ball -->
-        <include file="$(find interbotix_xslocobot_gazebo)/launch/load_ball.launch" ns="$(arg robot_name)"/>
+        <include file="$(find interbotix_xslocobot_gazebo)/launch/load_ball.launch" ns="$(arg robot_name)">
+            <arg name="ball_x_pos"                        value="5.0"/>
+            <arg name="ball_y_pos"                        value="6.0"/>
+            <arg name="ball_z_pos"                        value="0.033"/>
+        </include>
+
+        <!-- Static Transform Node from `odom` to `map` frame - Required by move_base node -->
+        <node pkg="tf" type="static_transform_publisher" name="ball_to_map_transformation" args="5.0 6.0 0 0 0 0 1 map ball_link 100"/>
 
         <!-- Launch Move Group -->
         <include file="$(find interbotix_xslocobot_moveit)/launch/move_group.launch" ns="$(arg robot_name)">

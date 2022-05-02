@@ -44,3 +44,4 @@ gripper_controller:
   gains:
     left_finger: {p: 100.0,  d: 1.0, i: 0.0}
     right_finger: {p: 100.0,  d: 1.0, i: 0.0}
+stop_trajectory_duration: 0

@@ -4,6 +4,9 @@ SimulationController::SimulationController(ros::NodeHandle *node_handle):node(*n
 {
     // camera publisher
     camera_pub = node.advertise< std_msgs::Float64>("/locobot/tilt_controller/command", 10);
+
+    // the publisher to publish the goal of navigation
+    nav_goal_pub = node.advertise<geometry_msgs::PoseStamped>("/locobot/move_base_simple/goal",10);
     
     // service
     srv_moveit_plan = node.advertiseService("moveit_plan",&SimulationController::Command_Process,this);
@@ -174,8 +177,8 @@ void SimulationController::closedGripper(trajectory_msgs::JointTrajectory& postu
   /* Set them as closed. */
   posture.points.resize(1);
   posture.points[0].positions.resize(2);
-  posture.points[0].positions[0] = 0.028;
-  posture.points[0].positions[1] = -0.028;
+  posture.points[0].positions[0] = 0.027;
+  posture.points[0].positions[1] = -0.027;
   posture.points[0].time_from_start = ros::Duration(0.5);
   // END_SUB_TUTORIAL
 }
@@ -183,7 +186,7 @@ void SimulationController::closedGripper(trajectory_msgs::JointTrajectory& postu
 /// @brief pick up
 bool SimulationController::pick_up(void)
 {
-    arm_move_group->setPlanningTime(45.0);
+    // arm_move_group->setPlanningTime(45.0);
 
     add_tennis_ball_as_object();
 
@@ -206,8 +209,8 @@ bool SimulationController::pick_up(void)
     grasps[0].pre_grasp_approach.direction.header.frame_id = "locobot/arm_base_link";
     /* Direction is set as positive x axis */
     grasps[0].pre_grasp_approach.direction.vector.x = 1;
-    grasps[0].pre_grasp_approach.min_distance = 0.195;
-    grasps[0].pre_grasp_approach.desired_distance = 0.215;
+    grasps[0].pre_grasp_approach.min_distance = 0.115;
+    grasps[0].pre_grasp_approach.desired_distance = 0.135;
 
     // // Setting post-grasp retreat
     // // ++++++++++++++++++++++++++
@@ -216,7 +219,7 @@ bool SimulationController::pick_up(void)
     /* Direction is set as positive z axis */
     grasps[0].post_grasp_retreat.direction.vector.z = 1;
     grasps[0].post_grasp_retreat.min_distance = 0.1;
-    grasps[0].post_grasp_retreat.desired_distance = 0.55;
+    grasps[0].post_grasp_retreat.desired_distance = 0.25;
 
     openGripper(grasps[0].pre_grasp_posture);
 
@@ -246,14 +249,33 @@ void SimulationController::add_tennis_ball_as_object(void)
 
     /* Define the pose of the object. */
     collision_objects[0].primitive_poses.resize(1);
-    collision_objects[0].primitive_poses[0].position.x = 0.65;
-    collision_objects[0].primitive_poses[0].position.y = 0;
-    collision_objects[0].primitive_poses[0].position.z = 0.033;
-    collision_objects[0].primitive_poses[0].orientation.w = 1.0;
+    collision_objects[0].primitive_poses[0].position.x = 0.6;
+    collision_objects[0].primitive_poses[0].position.y = 0.0;
+    collision_objects[0].primitive_poses[0].position.z = 0.033;   // sin(theta/2) theta = 0
+    collision_objects[0].primitive_poses[0].orientation.w = 1.0;    // cos(theta/2)
 
     collision_objects[0].operation = collision_objects[2].ADD;
 
     planning_scene_interface->applyCollisionObjects(collision_objects);
+}
+
+// std_msgs::Float64 angle;
+//     float angle_value = angle_data.data;
+//     angle.data = angle_value*M_PI/180.0f;
+
+//     camera_pub.publish(angle);
+//     return true;
+
+/// @brief publish the goal to navigation
+bool SimulationController::publish_navigation_goal(const geometry_msgs::PoseStamped goal_pose)
+{
+    geometry_msgs::PoseStamped point;
+    // point.point = 
+    ROS_INFO("goal position x:%f",goal_pose.pose.position.x);
+
+    nav_goal_pub.publish(goal_pose);
+
+    return true;
 }
 
 bool SimulationController::Command_Process(interbotix_simulation_controller::MoveItPlan::Request &req, interbotix_simulation_controller::MoveItPlan::Response &res)
@@ -302,6 +324,12 @@ bool SimulationController::Command_Process(interbotix_simulation_controller::Mov
     {
         success = pick_up();
         service_type = "Pick up tennis ball";
+    }
+    else if(req.cmd == interbotix_simulation_controller::MoveItPlan::Request::CMD_NAVIGATION)
+    {
+        geometry_msgs::PoseStamped goal_pose = req.nav_goal_pose;
+        success = publish_navigation_goal(goal_pose);
+        service_type = "Publish the goal of navigation";
     }
     
     res.success = success;

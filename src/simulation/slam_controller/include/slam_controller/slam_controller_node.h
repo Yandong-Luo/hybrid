@@ -4,12 +4,14 @@
 #include <iostream>
 #include <math.h>
 #include <std_msgs/Float64.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <rosgraph_msgs/Clock.h>
 #include <std_msgs/Time.h>
 // MoveIt
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include "interbotix_simulation_controller/MoveItPlan.h"
+#include <actionlib_msgs/GoalStatusArray.h>
 // #include <interbotix_simulation_controller>
 // TF2
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -33,6 +35,10 @@ private:
     bool plan_success;
 
     interbotix_simulation_controller::MoveItPlan srv;
+
+    ros::Subscriber nav_status_sub;
+
+    bool start_pick;
     
 public:
     SlamController(ros::NodeHandle* nodehandle);
@@ -56,6 +62,12 @@ public:
     void request_open_gripper(void);
 
     void request_pick_up(void);
+
+    void request_navigation(void);
+
+    void nav_status_Callback(const actionlib_msgs::GoalStatusArray::ConstPtr& nav_status);
+
+    bool reach_goal;
 
     // void set_end_effector_pose(moveit::planning_interface::MoveGroupInterface& move_group);
 };
