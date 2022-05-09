@@ -28,7 +28,7 @@ Currently this part of the code belongs to the simulation part.
 roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_rrt_exploration:=true
 ```
 
-![rrt_exploration4](.\image\\rrt_exploration4.gif)
+![rrt_exploration4](https://github.com/Yandong-Luo/hybrid/image/rrt_exploration4.gif)
 
 ##### SLAM Based on Keyboard
 
