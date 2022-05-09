@@ -16,11 +16,11 @@ Currently this part of the code belongs to the simulation part.
 
 ![locobot2](https://github.com/Yandong-Luo/hybrid/blob/master/image/locobot2.jpg)
 
-#### Result
+### Result
 
 #### SLAM
 
-对于SLAM部分，我们通过两种方式来完成SLAM，一种是基于RRT算法的自主建图，另一种我们通过键盘控制机器人进行SLAM任务。
+For the SLAM part, we complete SLAM in two ways, one is the autonomous mapping based on the RRT algorithm, and the other is the SLAM task where we control the robot through the keyboard.
 
 ##### RRT SLAM
 
