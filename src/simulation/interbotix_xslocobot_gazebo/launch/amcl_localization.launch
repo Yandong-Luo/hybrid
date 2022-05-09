@@ -1,0 +1,68 @@
+<launch>
+    <arg name="map_file" default="$(find indoor_bot)/maps/triangle_test.yaml"/>
+    <arg name="world_file" default="$(find indoor_bot)/worlds/triangle_test.world"/>
+    <arg name="initial_pose_x" default="0."/>
+    <arg name="initial_pose_y" default="0."/>
+
+
+    <!-- Launch WORLD -->
+    <include file="$(find indoor_bot)/launch/include/world.launch">
+        <arg name="world_file" value="$(arg world_file)"/>
+    </include>
+
+    <!-- Launch ROBOT -->
+    <include file="$(find interbotix_xslocobot_gazebo)/launch/include/MT_bot.launch">
+        <arg name="x" value="$(arg initial_pose_x)"/>
+        <arg name="y" value="$(arg initial_pose_y)"/>
+        <arg name="z" value="0"/>
+        <arg name="roll" value="0"/>
+        <arg name="pitch" value="0"/>
+        <arg name="yaw" value="0.0"/>
+    </include>
+    
+    <!--开启points-to-scan 将Robosen的pointcloud转为2维的scan话题-->
+    <include file="$(find yelink_pointcloud_to_laserscan)/launch/rslidar.launch" />
+
+
+      <!-- Static Transform Node from `odom` to `map` frame - Required by move_base node -->
+    <include file="$(find indoor_bot)/launch/move_base/static_transform_odom_to_map.launch"/>
+
+    <!-- MAP Server -->
+    <include file="$(find indoor_bot)/launch/include/map_server.launch">
+        <arg name="map_file" value="$(arg map_file)"/>
+    </include>
+
+
+    <!-- AMCL Node -->
+    <include file="$(find indoor_bot)/launch/include/amcl.launch">
+        <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+        <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    </include>
+
+
+      <!-- 开启激光里程计,开启gazebo上帝视角就不要开启激光里程计了-->
+    <!-- <include file="$(find rf2o_laser_odometry)/launch/rf2o_laser_odometry.launch" /> -->
+
+    <!-- MOVE Base Node - DWAPlannerROS -->
+    <include file="$(find indoor_bot)/launch/move_base/localplanner_DWAPlannerROS.launch"/>
+
+    <!--加载雷达融合-->
+    <include file="$(find ira_laser_tools)/launch/laserscan_multi_merger.launch"/>
+
+    <!-- RVIZ -->
+    <include file="$(find indoor_bot)/launch/include/rviz.launch">
+        <arg name="rviz_config" value="$(find indoor_bot)/rviz/MT_bot.rviz"/>
+    </include>
+
+    <node pkg="ackermann_vehicle_navigation" type="cmd_vel_to_ackermann_drive.py" name="convert_cmd_to_drive"  output="screen">
+  </node>
+
+    <!--上帝视角里程计-->
+    <node pkg="ackermann_vehicle_navigation" type="gazebo_odom_publisher" name="gazebo_odom_publisher" output="screen" >
+        <param name="robot_name" value="mt_car_model" />
+        <param name="odom_topic" value="odom"/>
+        <param name="robot_frame_id" value="/base_footprint"/>
+        <param name="Frequency_of_odom_publisher" value="20"/>
+    </node>
+  
+</launch>

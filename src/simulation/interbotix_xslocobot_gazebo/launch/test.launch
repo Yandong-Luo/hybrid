@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Launch Gazebo World -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="use_sim_time" value="true"/>
+        <arg name="paused" value="false"/>
+        <arg name="debug" value="false"/>
+        <arg name="gui" value="true" />
+        <arg name="headless" value="false"/>
+    </include>
+
+    <!--Include description and control launch files-->
+    <!-- <include file="$(find kuka_arm)/launch/robot_description.launch"/>
+    <include file="$(find kuka_arm)/launch/robot_control.launch"/> -->
+    
+    <!--spawn a robot in gazebo world-->
+    <!-- <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false"
+        output="screen" args="-urdf -param
+        robot_description -x 0 -y 0 -z 0 -R 0 -P 0 -Y 0 -model kr210"/> -->
+
+    <!--GUI used to send fake joint values-->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="use_gui" value="true"/>
+        <!-- <remap from="/joint_states" to="/kuka_arm/joint_states"/> -->
+    </node>
+
+    <!--rviz-->
+    <!-- <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false"
+    output="screen" args="-d $(find kuka_arm)/config/forward_kinematics.rviz"/> -->
+
+    <!--arm control-->
+    <!-- <node name="arm_control_node" pkg="arm_control" type="arm_control_node" output="screen">
+        <param name="init_theta1" value="0" type="double"/>
+        <param name="init_theta2" value="0" type="double"/>
+        <param name="init_theta3" value="0" type="double"/>
+        <param name="init_theta4" value="0" type="double"/>
+        <param name="init_theta5" value="0" type="double"/>
+        <param name="init_theta6" value="0" type="double"/>
+    </node> -->
+
+
+    <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <!-- <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/> -->
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <!-- <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find rrbot_gazebo)/worlds/rrbot.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include> -->
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+
+    
+
+    <arg name="robot_model"                       default="locobot_wx250s"/>
+    <arg name="robot_name"                        default="locobot"/>
+    <arg name="arm_model"                         default="$(eval 'mobile_' + arg('robot_model').split('_')[1])"/>
+    <arg name="show_lidar"                        default="false"/>
+    <arg name="show_gripper_bar"                  default="true"/>
+    <arg name="show_gripper_fingers"              default="true"/>
+    <arg name="external_urdf_loc"                 default=""/>
+    <arg name="load_gazebo_configs"               default="false"/>
+    <arg name="use_joint_pub"                     default="false"/>
+    <arg name="use_joint_pub_gui"                 default="false"/>
+    <arg name="rate"                              default="10"/>
+    <arg name="source_list"                       default="[]"/>
+    <arg name="use_rviz"                          default="true"/>
+    <arg name="rviz_frame"                        default="$(arg robot_name)/base_footprint"/>
+    <arg name="rvizconfig"                        default="$(find interbotix_xslocobot_descriptions)/rviz/xslocobot_description.rviz" />
+    <arg name="model"                             default="$(find interbotix_xslocobot_descriptions)/urdf/locobot.urdf.xacro
+                                                         arm_model:=$(arg arm_model)
+                                                         robot_model:=$(arg robot_model)
+                                                         robot_name:=$(arg robot_name)
+                                                         show_lidar:=$(arg show_lidar)
+                                                         show_gripper_bar:=$(arg show_gripper_bar)
+                                                         show_gripper_fingers:=$(arg show_gripper_fingers)
+                                                         external_urdf_loc:=$(arg external_urdf_loc)
+                                                         load_gazebo_configs:=$(arg load_gazebo_configs)"/>
+
+  <param name="$(arg robot_name)/robot_description" command="xacro $(arg model)"/>
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <!-- <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -model mobile_wx250s -param robot_description"/> -->
+
+<node
+    name="urdf_spawner"
+    pkg="gazebo_ros"
+    type="spawn_model"
+    respawn="false"
+    output="screen"
+    ns="$(arg robot_name)"
+	  args="-urdf -model $(arg robot_name) -param robot_description"/>
+
+  <!-- ros_control rrbot launch file -->
+  <!-- <include file="$(find kuka_arm)/launch/robot_control.launch" >
+  </include> -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	respawn="false" output="screen">
+    <remap from="/joint_states" to="/kuka_arm/joint_states" />
+  </node>
+
+</launch>
