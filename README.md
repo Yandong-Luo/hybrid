@@ -28,7 +28,7 @@ Currently this part of the code belongs to the simulation part.
 roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_rrt_exploration:=true
 ```
 
-![rrt_exploration4](https://github.com/Yandong-Luo/hybrid/master/image/rrt_exploration4.gif)
+![rrt_exploration4](https://github.com/Yandong-Luo/hybrid/blob/master/image/rrt_exploration4.gif)
 
 ##### SLAM Based on Keyboard
 
@@ -36,7 +36,7 @@ roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_rrt_explorat
 roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_slam:=true
 ```
 
-![slam](https://github.com/Yandong-Luo/hybrid/image/image/slam.gif)
+![slam](https://github.com/Yandong-Luo/hybrid/blob/master/image/slam.gif)
 
 #### Navigation
 
@@ -44,7 +44,7 @@ roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_slam:=true
 roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_navigation:=true
 ```
 
-![navigation](https://github.com/Yandong-Luo/hybrid/image/image/navigation.gif)
+![navigation](https://github.com/Yandong-Luo/hybrid/blob/master/image/navigation.gif)
 
 #### Navigation + pick up
 
@@ -58,10 +58,10 @@ roslaunch interbotix_xslocobot_gazebo locobot_simulation.launch use_moveit:=true
 rosrun slam_controller slam_controller_node
 ```
 
-![pick_nav_decoding 00_00_00-00_00_30](https://github.com/Yandong-Luo/hybrid/image/image/pick_nav_decoding 00_00_00-00_00_30.gif)
+![pick_nav_decoding 00_00_00-00_00_30](https://github.com/Yandong-Luo/hybrid/blob/master/image/pick_nav_decoding%2000_00_00-00_00_30.gif)
 
 #### Pick up Task
 
 If you want to achieve the following functions, you need to adjust the position of the ball in the launch file and modify the content of slam_controller.
 
-![pick_up](https://github.com/Yandong-Luo/hybrid/image/image/pick_up.gif)
+![pick_up](https://github.com/Yandong-Luo/hybrid/blob/master/image/pick_up.gif)
