@@ -14,6 +14,8 @@ https://www.trossenrobotics.com/locobot-wx250-6-degree-of-freedom.aspx#documenta
 
 Currently this part of the code belongs to the simulation part.
 
+Code for the physical robot:https://github.com/Yandong-Luo/physical_locobot_ws
+
 ![locobot2](https://github.com/Yandong-Luo/hybrid/blob/master/image/locobot2.jpg)
 
 ### Result
